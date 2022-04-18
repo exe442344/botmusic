@@ -1,17 +1,17 @@
 const fs = require("fs");
 
 module.exports = (client) => {
-  console.log("---------------------- COMANDOS ----------------------");
-  const commandFolders = fs.readdirSync('./src/commands');
+    const eventFiles = fs.readdirSync('./src/events').filter(file => file.endsWith('.js'));
+    console.log("---------------------- EVENTOS ----------------------");
 
-  for (const folder of commandFolders) {
-    const commandFiles = fs.readdirSync(`./src/commands/${folder}`).filter(file => file.endsWith('.js'));
-    for (const file of commandFiles) {
-      const command = require(`../commands/${folder}/${file}`);
-      client.commands.set(command.name, command);
-
-      console.log(command.name, '>', command.description);
+    for (const file of eventFiles) {
+        const event = require(`../events/${file}`);
+        if (event.once) {
+            client.once(event.name, (...args) => event.execute(...args, client));
+        } else {
+            client.on(event.name, (...args) => event.execute(...args, client));
+        }
+        console.log(event.name, '>', 'once: '+event.once);
     }
-  }
-  console.log("---------------------- COMANDOS ----------------------");
-};
+    console.log("---------------------- EVENTOS ----------------------");
+}
